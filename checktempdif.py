@@ -112,9 +112,6 @@ elif fan == 0:
         count += 1
 else:
     print("error")
-responseBody['climates'][1]['heatFan']
-responseBody['climates'][2]['heatFan']
-responseBody['climates'][0]['heatFan']
 
 #ADD REQUIRED JSON KEYS FOR RESPONSE
 ####################################################################################
