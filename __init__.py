@@ -22,9 +22,9 @@ def main(mytimer: func.TimerRequest) -> None:
 tempthresh = 40
 
 #Define storage account name
-storAcct = 'ecobee01'
+storAcct = ''
 #Define Access Key
-storKey = 'NrH25aO8t4wmpCdGmFwy60arcqc5SXoaT9HUHQLWWa2R59EHc+g2nMNwr/SHjmkq2PcdlePibrzjT+cV1FJCMw=='
+storKey = ''
 
 #API PREP
 ####################################################################################
