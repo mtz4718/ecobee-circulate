@@ -1,9 +1,8 @@
-import datetime
 import logging
 import requests
 import json
 import ast
-from datetime import datetime
+import datetime
 from azure.storage.blob import BlockBlobService
 
 import azure.functions as func
@@ -23,9 +22,9 @@ def main(mytimer: func.TimerRequest) -> None:
 tempthresh = 40
 
 #Define storage account name
-storAcct = ''
+storAcct = 'ecobee01'
 #Define Access Key
-storKey = ''
+storKey = 'NrH25aO8t4wmpCdGmFwy60arcqc5SXoaT9HUHQLWWa2R59EHc+g2nMNwr/SHjmkq2PcdlePibrzjT+cV1FJCMw=='
 
 #API PREP
 ####################################################################################
@@ -54,6 +53,7 @@ query = {'json': ('{"selection":{"selectionType":"registered","includeProgram":t
 programResp = requests.get(apiUrl, headers=hed, params=query)
 #convert to Dict
 programDict = json.loads(programResp.content)
+
 
 
 #SENSOR GET
@@ -106,29 +106,37 @@ else:
 #BEGIN PREPPING RESPONSE AND ASSIGN FAN LOGIC
 ####################################################################################
 #Declare json that will be returned and prepare to edit it
+
 responseBody = programDict['thermostatList'][0]['program']
+
 #Remove sensor Key loop
+
 count=0
 while count < 3:
     if responseBody['climates'][count]['sensors']:
         del(responseBody['climates'][count]['sensors'])
     count += 1
+
 #Remove colour Key loop
+
 count=0
 while count < 3:
     if responseBody['climates'][count]['colour']:
         del(responseBody['climates'][count]['colour'])
     count += 1
+
 #Remove Current Climate Key
+
 if responseBody['currentClimateRef']:
         del(responseBody['currentClimateRef'])
-#Cleanup done, declare fan AUTO/ON
+
+#Cleanup done, declare fan AUTO/ON and make variable for logs
+
 if fan == 1:
     count = 0
     while count < 3:
         responseBody['climates'][count]['coolFan'] = 'on'
         responseBody['climates'][count]['heatFan'] = 'on'
-        #Add $fanResp for logs
         fanResp = 'Fan is turned to On'
         count += 1
 elif fan == 0:
@@ -136,40 +144,51 @@ elif fan == 0:
     while count < 3:
         responseBody['climates'][count]['coolFan'] = 'auto'
         responseBody['climates'][count]['heatFan'] = 'auto'
-        #Add $fanResp for logs
         fanResp = 'Fan is turned to Auto'
         count += 1
 else:
     fanresp = 'ERROR'
-responseBody['climates'][1]['heatFan']
-responseBody['climates'][2]['heatFan']
-responseBody['climates'][0]['heatFan']
+    responseBody['climates'][1]['heatFan']
+    responseBody['climates'][2]['heatFan']
+    responseBody['climates'][0]['heatFan']
 
 #ADD REQUIRED JSON KEYS FOR RESPONSE
 ####################################################################################
 #Declare required header
+
 append = {"selection": {"selectionType":"registered","selectionMatch":""},"thermostat": {"program": {}}}
+
 #Nest response in required header
+
 append["thermostat"]["program"] = responseBody
+
 #convert to json
+
 jsonReturn = json.dumps(append)
 
 #SEND RESPONSE
 ####################################################################################
 #assign response to variable
+
 programResp = requests.get(apiUrl, headers=hed, params=query)
+
 #convert to Dict
+
 programDict = json.loads(programResp.content)
+
 #Post and save output
+
 postResp = requests.post(apiUrl, headers=hed, data=jsonReturn)
 
 #CONFIGURE LOGGING
 ####################################################################################
 #Save output and settings in prep for log, use $fanResp from previous logic statements
+
 postResp = str(postResp)
-date = datetime.now()
+date = datetime.datetime.now()
 dateTime = date.strftime("%m-%d-%Y_%H:%M:%S")
 logString = dateTime + "   " + fanResp + " :::: The API responded with " + postResp
 
 #Send log string to blob
+
 blob.create_blob_from_text('ecobee-log', 'log-' + dateTime + '.txt', logString)
