@@ -1,17 +1,41 @@
-import json
+import datetime
+import logging
 import requests
-import sys
+import json
+import ast
+from azure.storage.blob import BlockBlobService
+
+import azure.functions as func
+
+
+def main(mytimer: func.TimerRequest) -> None:
+    utc_timestamp = datetime.datetime.utcnow().replace(
+        tzinfo=datetime.timezone.utc).isoformat()
+
+    if mytimer.past_due:
+        logging.info('The timer is past due!')
+
+    logging.info('Python timer trigger function ran at %s', utc_timestamp)
 
 
 #Define temp threshhold, number is degree x 10
 tempthresh = 40
 
+#Define storage account name
+storAcct = 'ecobee01'
+#Define Access Key
+storKey = 'NrH25aO8t4wmpCdGmFwy60arcqc5SXoaT9HUHQLWWa2R59EHc+g2nMNwr/SHjmkq2PcdlePibrzjT+cV1FJCMw=='
+
 #API PREP
 ####################################################################################
-#Grab latest Token from token.json and assign to $token
-with open('token.json') as f:
-    data = json.load(f)
+#Grab latest Token from token.json in azure blob storage and assign to $auth
+blob = BlockBlobService(storAcct, storKey)
+
+tokenblob = blob.get_blob_to_text('ecobee-token', 'token.json')
+#convert string to dict
+data = ast.literal_eval(tokenblob.content)
 auth = data['access_token']
+
 
 #API Headers
 hed = {
@@ -112,6 +136,9 @@ elif fan == 0:
         count += 1
 else:
     print("error")
+responseBody['climates'][1]['heatFan']
+responseBody['climates'][2]['heatFan']
+responseBody['climates'][0]['heatFan']
 
 #ADD REQUIRED JSON KEYS FOR RESPONSE
 ####################################################################################
@@ -131,3 +158,5 @@ programResp = requests.get(apiUrl, headers=hed, params=query)
 programDict = json.loads(programResp.content)
 #Post and save output
 postResp = requests.post(apiUrl, headers=hed, data=jsonReturn)
+fan = str(fan)
+postResp = str(postResp)
