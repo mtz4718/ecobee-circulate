@@ -22,9 +22,9 @@ def main(mytimer: func.TimerRequest) -> None:
 tempthresh = 40
 
 #Define storage account name
-storAcct = ''
+storAcct = 'ENTER YOUR OWN'
 #Define Access Key
-storKey = ''
+storKey = 'ENTER YOUR OWN'
 
 #API PREP
 ####################################################################################
@@ -34,6 +34,7 @@ blob = BlockBlobService(storAcct, storKey)
 tokenblob = blob.get_blob_to_text('ecobee-token', 'token.json')
 #convert string to dict
 data = ast.literal_eval(tokenblob.content)
+refreshauth = data['refresh_token']
 auth = data['access_token']
 
 
@@ -190,5 +191,33 @@ dateTime = date.strftime("%m-%d-%Y_%H:%M:%S")
 logString = dateTime + "   " + fanResp + " :::: The API responded with " + postResp
 
 #Send log string to blob
-#blob.append_blob_from_text('ecobee-log', 'log.txt', logString)
 blob.create_blob_from_text('ecobee-log', 'log-' + dateTime + '.txt', logString)
+
+
+####################################################################################
+#Refresh authentication
+
+#API Headers
+
+#API Url
+apiUrl = 'https://api.ecobee.com/token'
+
+
+#PROGRAM GET
+####################################################################################
+#API Query
+
+query = 'grant_type=refresh_token&code=' + refreshauth + '&client_id= ENTER YOUR OWN'
+
+#assign response to variable
+
+refreshResp = requests.post(apiUrl, params=query)
+
+#convert to Dict, then to String
+
+refreshDict = json.loads(refreshResp.content)
+refreshString = json.dumps(refreshDict)
+
+#Upload new tokens back to azure
+
+blob.create_blob_from_text('ecobee-token','token.json',refreshString)
