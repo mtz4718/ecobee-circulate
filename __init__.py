@@ -93,15 +93,25 @@ tempd0 = abs(temp0 - temp1)
 tempd1 = abs(temp0 - temp2)
 tempd2 = abs(temp1 - temp2)
 
-#logic check
-if tempd0 >= tempthresh:
-    fan = 1
-elif tempd1 >= tempthresh:
-    fan = 1
-elif tempd2 >= tempthresh:
-    fan = 1
-else:
+#Winter Logic
+if temp1 < tempd0
     fan = 0
+    else:
+
+        #Get temp difs and abs converts to positive number
+        tempd0 = abs(temp0 - temp1)
+        tempd1 = abs(temp0 - temp2)
+        tempd2 = abs(temp1 - temp2)
+
+        #logic check
+        if tempd0 >= tempthresh:
+            fan = 1
+        elif tempd1 >= tempthresh:
+            fan = 1
+        elif tempd2 >= tempthresh:
+            fan = 1
+        else:
+            fan = 0
 
 
 #BEGIN PREPPING RESPONSE AND ASSIGN FAN LOGIC
